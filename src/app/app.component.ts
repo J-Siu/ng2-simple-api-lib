@@ -21,7 +21,7 @@ import {ApiService} from './api.service';
 		}`]
 })
 export class AppComponent {
-	title = 'Angular2 Simple Api Example';
+	title = 'Angular Simple Api Example';
 
 	constructor(private as: ApiService) { }
 
