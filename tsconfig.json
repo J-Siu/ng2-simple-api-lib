@@ -17,7 +17,15 @@
     "lib": [
       "es2018",
       "dom"
-    ]
+    ],
+    "paths": {
+      "simple-api-client-ng2": [
+        "dist/simple-api-client-ng2"
+      ],
+      "simple-api-client-ng2/*": [
+        "dist/simple-api-client-ng2/*"
+      ]
+    }
   },
   "angularCompilerOptions": {
     "fullTemplateTypeCheck": true,
