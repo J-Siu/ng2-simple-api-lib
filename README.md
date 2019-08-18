@@ -1,4 +1,4 @@
-[simple-api-client-ng2](https://github.com/J-Siu/simple-api-client-ng2) is an Angular api service, which work with [simple-api-express](https://github.com/J-Siu/simple-api-express), an ExpressJS api handler.
+[simple-api-client-ng2](https://github.com/J-Siu/ng2-simple-api-lib) is an Angular api service, which work with [simple-api-express](https://github.com/J-Siu/simple-api-express), an ExpressJS api handler.
 
 > __simple-api-client-ng2__ uses Angular CLI starting 8.2.0. New repository https://github.com/J-Siu/ng2-simple-api-lib/ contains both library and server example.
 >
