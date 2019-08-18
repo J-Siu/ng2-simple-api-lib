@@ -1,268 +1,121 @@
-# simple-api-express
+[simple-api-client-ng2](https://github.com/J-Siu/simple-api-client-ng2) is an Angular api service, which work with [simple-api-express](https://github.com/J-Siu/simple-api-express), an ExpressJS api handler.
 
-[simple-api-express](https://github.com/J-Siu/simple-api-express) is an ExpressJS api handler (NOT middleware) that work with
-[simple-api-client-ng2](https://github.com/J-Siu/ng2-simple-api-lib), an Angular api service.
-
-> To enable faster update, simple-api-client-ng2 switched to Angular CLI starting 8.2.0 and use new repository https://github.com/J-Siu/ng2-simple-api-lib/
+> __simple-api-client-ng2__ uses Angular CLI starting 8.2.0. New repository https://github.com/J-Siu/ng2-simple-api-lib/ contains both library and server example.
 >
-> This new repository contains both library and server example.
->
-> All version < 8.2.0 are in old repository https://github.com/J-Siu/simple-api-client-ng2/
+> Version < 8.2.0 are in old repository https://github.com/J-Siu/simple-api-client-ng2/
 
-## Index
+<!-- TOC -->
 
 - [Install](#install)
-- [Usage Flow](#usage-flow)
-  - [API](#api)
-    - [constructor](#constructor)
-    - [debug](#debug)
-    - [list](#list)
-    - [register](#register)
-    - [registerObject](#registerobject)
-    - [response](#response)
-    - [handler](#handler)
-  - [Error Handling](#error-handling)
-    - [404 Not Found](#404-not-found)
-    - [Callback throw](#callback-throw)
+- [Usage](#usage)
+  - [Module](#module)
+  - [Component](#component)
+- [API](#api)
+  - [SimpleApiClient.get](#simpleapiclientget)
+  - [SimpleApiClient.list](#simpleapiclientlist)
+  - [SimpleApiObj.call](#simpleapiobjcall)
+  - [SimpleApiObj.setErrorHandler](#simpleapiobjseterrorhandler)
+- [Error Handling](#error-handling)
 - [Example](#example)
+- [Repository](#repository)
 - [Contributors](#contributors)
 - [Changelog](#changelog)
 - [License](#license)
 
-## Install
+<!-- /TOC -->
+
+### Install
 
 ```sh
-npm install simple-api-express
+npm install simple-api-client-ng2
 ```
 
-## Usage Flow
+### Usage
 
-`simple-api-express` depends on ExpressJS middleware bodyParser for json body decode.
+`simple-api-client-ng2` is implemented as Angular 2 injectable service name __SimpleApiClient__.
 
-```javascript
-const express = require('express');
-var app = express();
-var bodyParser = require('body-parser');
-app.use(bodyParser.json());
-app.listen(8080);
-```
+#### Module
 
-Import `simple-api-express`:
+Add `SimpleApiClient` into module providers:
 
 ```javascript
-const SimpleApi = require('simple-api-express').SimpleApi;
-```
+import { SimpleApiClient } from 'simple-api-client-ng2';
 
-Create api object with base url:
-
-```javascript
-const apiDemoUrl = '/demo';
-var apiDemo = new SimpleApi(apiDemoUrl, true); // enable debug
-```
-
-Register a function as api callback:
-
-```javascript
-apiDemo.register('echo2',param => 'echo2:' + param);
-```
-
-You can also register all functions of an object as api callbacks:
-
-```javascript
-apiDemo.registerObject(require('./api-object').DemoObj);
-```
-
-Use express post and `SimpleApi.response()` to handle incoming api request:
-
-```javascript
-// Post request + API response
-app.post(path.join(apiDemoUrl, '*'), (req, res) => apiDemo.response(req, res))
-```
-
-`SimpleApi.handler()` can be use if additional action(eg: customizing response header or error page)
-is required before reply:
-
-```javascript
-// Post request + API handler
-app.post(path.join(apiDemoUrl, '*'), (req, res) => {
-  // Log request body before process
-  console.log(req.body);
-  try {
-    // Manual handler used, server code responsible to send result and handle error
-    // Use manual handler if custom header or custom 404 error are needed
-    let result = apiDemo.handler(req);
-
-    // Result must be return in json format
-    res.json(result);
-  }
-  catch (e) {
-    // Catch api not found error
-    res.status(e.status).end(e.error);
-  }
+@NgModule({
+  providers: [SimpleApiClient]
 })
+```
+
+#### Component
+
+```javascript
+import {SimpleApiClient, SimpleApiObj} from 'simple-api-client-ng2';
+
+export class ChildComponent implement OnInit {
+
+  apiObject: SimpleApiObj;
+
+  constructor(private api: SimpleApiClient) { }
+
+  ngOnInit() {
+    this.apiObject = this.api.get('/demo');
+
+    let reply = '';
+    this.apiObject.call(
+      'echo',
+      'This is a test',
+      r => this.reply = r);
+
+    console.log(this.reply);
+  }
+
+}
 ```
 
 ### API
 
-#### constructor
+#### SimpleApiClient.get
 
-`SimpleApi(baseUrl:string, debug:boolean)`
-
-- `baseUrl` will prefix all api url registered to this SimpleApi instance.
-- `debug` will enable/disable debug log. Default to false.
-
-```javascript
-const SimpleApi = require('simple-api-express').SimpleApi;
-const apiDemoUrl = '/demo';
-var apiDemo = new SimpleApi(apiDemoUrl, true); // enable debug
-```
-
-#### debug
-
-`debug(enable: boolean)` can enable/disable debug log.
+`SimpleApiClient.get(baseUrl: string = '/'): SimpleApiObj`
+will return a SimpleApiObj configure with `baseUrl`.
+Previous created SimpleApiObj will be returned if the same baseUrl is used.
 
 ```javascript
-apiDemo.debug(false);
+  this.apiObject = this.api.get('/demo');
 ```
 
-#### list
+#### SimpleApiClient.list
 
-`list()` return a `string[]` containing all registered api url.
+`SimpleApiClient.list(): string[]` will return a string array containing the baseUrl of all SimpleApiObj created.
 
-```javascript
-console.log(apiDemo.list());
-```
+#### SimpleApiObj.call
 
-Output:
+`SimpleApiObj.call(method, params, callback, errorHandler)`
 
-```js
-[ '/demo/echo', '/demo/echo2' ]
-```
+- __method: string__ Name of api
+- __params: any__ Argument of api, can be basic type like string, number, or object
+- __callback: (result: any) => void__ Callback function for handling api result
+- __errorHandler: (error: any) => void = this.errorHandler__ Optional error handler to handle api call error
 
-#### register
+#### SimpleApiObj.setErrorHandler
 
-`register(url:string,callback)` register a callback function to `url`
-
-- `url` : Api url path after baseUrl. The resulting url for the api is baseUrl/url.
-- `callback` : a function that take a single argument as api parameter, and return a result.
-
-```javascript
-apiDemo.register('echo2',param => 'echo2:' + param);
-```
-
-#### registerObject
-
-`registerObject(object)` register all functions of an object as api callbacks.
-
-All functions of the object should take a single argument as api parameter, and return a result.
-
-The function name will be used api url.
-
-```javascript
-var DemoObj = {
-  echo(r) {
-    return r;
-  }
-}
-
-apiDemo.registerObject(DemoObj);
-```
-
-#### response
-
-`SimpleApi.response(req, res)` is a handle function for incoming api post request.
-Api parameter will be passed to corresponding callback.
-Callback result will be passed back to api client.
-
-`req, res` are request and response object pass in from ExpressJS post.
-
-```javascript
-// Post request + API response
-app.post(path.join(apiDemoUrl, '*'), (req, res) => apiDemo.response(req, res))
-```
-
-#### handler
-
-`SimpleApi.handler(req)` is an api handler function.
-It will invoke the corresponding callback base on the request url, and return the result.
-
-IT WILL NOT send out the result.
-
-IT IS NOT a ExpressJS post handler function. It needed to be called INSIDE the post handler function.
-
-Api handler can be use if additional action is required (eg: customizing response header or error page):
-
-```javascript
-// Post request + API handler
-app.post(path.join(apiDemoUrl, '*'), (req, res) => {
-  // Log request body before process
-  console.log(req.body);
-  try {
-    // Manual handler used, server code responsible to send result and handle error
-    // Use manual handler if custom header or custom 404 error are needed
-    let result = apiDemo.handler(req);
-
-    // Result must be return in json format
-    res.json(result);
-  }
-  catch (e) {
-    // Catch api not found error
-    res.status(e.status).end(e.error);
-  }
-})
-```
+`SimpleApiObj.setErrorHandler(handler: (any) => void)` replace SimpleApiObj default error handler with the specified one.
 
 ### Error Handling
 
-There are two types of error.
+For detail example on error handling, please refer to [error.component.ts](https://github.com/J-Siu/ng2-simple-api-lib/blob/master/src/app/error.component.ts) contain in full example below.
 
-#### 404 Not Found
-
-When `response()` is called with an non-exist api url,
-it will response with a HTTP 404 Not Found.
-
-When `handle()` is called with an non-exist api url,
-it will throw an error,
-which can be caught in the post handle function.
-
-#### Callback throw
-
-When `response()` is called,
-and the invoked api callback throw an error,
-which will be passed to remote client.
-The remote client, using [simple-api-client-ng2](https://github.com/J-Siu/simple-api-client-ng2),
-will throw an exception with the error.
-
-When `handle()` is called,
-and the invoked api callback throw an error,
-the error can be inspected from the result object.
-
-```javascript
-  let result = apiDemo.handler(req);
-
-  // If api callback return
-  if(result.error) {
-    console.log(result.error);
-  }
-
-  // Result must be return in json format
-  res.json(result);
-```
-
-The remote client, using [simple-api-client-ng2](https://github.com/J-Siu/simple-api-client-ng2),
-will throw an exception with the error.
-
-## Example
+### Example
 
 ```sh
-├── dist
-│   ├── ng2-simple-api-lib     // Compiled angular application
-│   └── simple-api-client-ng2  // Compiled library
-├── projects
-│   └── simple-api-client-ng2  // Library source
-├── server                     // Example server.
-└── src
-    └── app                    // Example app source
+├── dist/
+│   ├── ng2-simple-api-lib/     // Compiled angular application
+│   └── simple-api-client-ng2/  // Compiled library
+├── projects/
+│   └── simple-api-client-ng2/  // Library source
+├── server/                     // Example server.
+└── src/
+    └── app/                    // Example app source
 ```
 
 > The example server is not an angular application. It is a nodejs application.
@@ -299,11 +152,15 @@ node server.js
 
 Connect your browser to http://localhost:4000 .
 
-## Contributors
+### Repository
+
+- [ng2-simple-api-lib](https://github.com/J-Siu/ng2-simple-api-lib)
+
+### Contributors
 
 - [John Sing Dao Siu](https://github.com/J-Siu)
 
-## Changelog
+### Changelog
 
 - 1.2.0
   - Publish to NPM.
@@ -314,10 +171,12 @@ Connect your browser to http://localhost:4000 .
   - Update Readme.md
 - 8.2.0
   - Support Angular 8.2.0
-  - Switch to Angular Cli for faster future update.
-  - Include example in project
+  - Switch to Angular Cli for faster update.
+  - Include example
+- 8.2.1
+  - README.md clean up
 
-## License
+### License
 
 The MIT License
 
