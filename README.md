@@ -177,6 +177,8 @@ Connect your browser to http://localhost:4000 .
   - README.md clean up
 - 9.1.0
   - Support Angular 9.1.0
+- 11.2.9
+  - Support Angular 11.2.9
 
 ### License
 

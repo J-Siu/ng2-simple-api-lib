@@ -3,10 +3,11 @@ import { NgModule } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
 import { RouterModule } from '@angular/router';
+import { AppRoutingModule } from './app.routing';
 
 import { SimpleApiClient } from 'simple-api-client-ng2';
 
-import { routing } from './app.routing';
+//import { routing } from './app.routing';
 
 import { AppComponent } from './app.component';
 import { DataComponent } from './data.component';
@@ -23,7 +24,8 @@ import { ApiService } from './api.service';
 		FormsModule,
 		HttpClientModule,
 		RouterModule,
-		routing
+		AppRoutingModule
+	//	routing
 	],
 	declarations: [
 		AppComponent,
