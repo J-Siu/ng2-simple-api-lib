@@ -1,9 +1,12 @@
+# Angular Simple API Client [![Paypal donate](https://www.paypalobjects.com/en_US/i/btn/btn_donate_LG.gif)](https://www.paypal.com/donate/?business=HZF49NM9D35SJ&no_recurring=0&currency_code=CAD)
+
 [simple-api-client-ng2](//github.com/J-Siu/ng2-simple-api-lib) is an Angular api service, which work with [simple-api-express](//github.com/J-Siu/simple-api-express), an ExpressJS api handler.
 
 > __simple-api-client-ng2__ uses Angular CLI starting 8.2.0. New repository [github.com/J-Siu/ng2-simple-api-lib](//github.com/J-Siu/ng2-simple-api-lib/) contains both library and server example.
 >
 > Version < 8.2.0 are in old repository [github.com/J-Siu/simple-api-client-ng2](//github.com/J-Siu/simple-api-client-ng2/).
 
+### Table Of Content
 <!-- TOC -->
 
 - [Install](#install)
